@@ -1,5 +1,5 @@
 const amqp = require('amqplib/callback_api');
-const CLOUDAMQP_URL = "amqps://ngmlhqwf:bH6pcGeQ5hJ5N1fhJ9H9cEIQBnzSiLe6@puffin.rmq2.cloudamqp.com/ngmlhqwf";
+const CLOUDAMQP_URL = process.env.CLOUDAMQP_URL;
 
 // if the connection is closed or fails to be established at all, we will reconnect
 let amqpConn = null;
@@ -63,7 +63,6 @@ const publish = (exchange, routingKey, content) => {
 					offlinePubQueue.push([exchange, routingKey, content]);
 					pubChannel.connection.close();
 				}
-				console.log("[AMQP] Publish Ok", ok);
 			});
 	} catch (e) {
 		console.error("[AMQP] publish", e.message);
@@ -88,7 +87,7 @@ const startWorker = () => {
 			console.log("Worker is started");
 		});
 
-		function processMsg(msg) {
+		const processMsg = (msg) => {
 			work(msg, (ok) => {
 				try {
 					if (ok)
@@ -116,7 +115,7 @@ const closeOnErr = (err) => {
 }
 
 setInterval(() => {
-	publish("", "jobs", new Buffer.from("work work work"));
+	publish("", "jobs", new Buffer.from(`Work - ${Math.random()}`));
 }, 1000);
 
 start();
